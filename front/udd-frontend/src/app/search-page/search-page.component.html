@@ -1,0 +1,129 @@
+<div class="container">
+    <h1>Choose file to begin</h1>
+    <form (submit)="submitFileUploadForm($event, fileInput)" #fileUploadForm="ngForm">
+        <input type="file" #fileInput required>
+        <button type="submit">Upload File</button>
+    </form>
+    <div *ngIf="successMessage" class="alert">{{ successMessage }}</div>
+    <div *ngIf="errorMessage" class="alert">{{ errorMessage }}</div>
+    <button (click)="clearResults()" class="clear-results-button">X</button>
+</div>
+
+<div class="container">
+    <h1>Search</h1>
+    <form (ngSubmit)="submitQuery()" [formGroup]="queryForm">
+        <div class="input-group">
+            <input type="text" class="form-control" formControlName="query" placeholder="Enter keywords">
+        </div>
+        <div>
+            <div class="radio-buttons">
+                <label class="radio-inline">
+                    <input type="radio" formControlName="queryType" [value]="'simple'"
+                        [checked]="queryForm.controls['queryType'].value === 'simple'" (change)="togglePhaseQuery()"> Simple
+                    Search
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" formControlName="queryType" [value]="'advanced'"
+                        [checked]="queryForm.controls['queryType'].value === 'advanced'"> Advanced Search
+                </label>
+            </div>
+            <div *ngIf="isSimpleSearch()" class="phase-query">
+                <label>
+                    <input type="checkbox" formControlName="isPhaseQuery"> Is Phase Query
+                </label>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
+
+<div class="container">
+    <div class="content">
+        <h1>Simple search</h1>
+        <form (ngSubmit)="submitSimpleSearch()">
+            <div class="input-group">
+                <label for="field">Choose field </label>
+                <select class="form-control" name="field" id="field" [(ngModel)]="simpleSearchForm.value.field">
+                    <option disabled selected value="">Choose field</option>
+                    <option value="firstName">First name</option>
+                    <option value="lastName">Last name</option>
+                    <option value="governmentName">Government name</option>
+                    <option value="administrationLevel">Administration level</option>
+                    <option value="content_sr">Content</option>
+                    <option value="content_en">Content English</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="text">Enter value </label>
+                <input type="text" class="form-control" name="text" id="text" placeholder="Enter value"
+                    [(ngModel)]="simpleSearchForm.value.text">
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    <div class="content">
+        <h1>Boolean search</h1>
+        <form (ngSubmit)="submitAdvancedSearch()" [formGroup]="advancedSearchForm">
+            <div class="input-group">
+                <label for="field1">Choose first field</label>
+                <select name="field1" id="field1" formControlName="field1">
+                    <option disabled selected value="">Choose first field</option>
+                    <option value="firstName">First name</option>
+                    <option value="lastName">Last name</option>
+                    <option value="governmentName">Government name</option>
+                    <option value="administrationLevel">Administration level</option>
+                    <option value="content_sr">Content</option>
+                    <option value="content_en">Content English</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="value1">Enter value</label>
+                <input type="text" name="value1" id="value1" formControlName="value1" placeholder="Enter first value">
+            </div>
+            <div class="input-group">
+                <label for="operation">Choose operation</label>
+                <select name="operation" id="operation" formControlName="operation">
+                    <option disabled selected value="">Choose operation</option>
+                    <option value="AND">AND</option>
+                    <option value="OR">OR</option>
+                    <option value="NOT">NOT</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="field2">Choose second field</label>
+                <select name="field2" id="field2" formControlName="field2">
+                    <option disabled selected value="">Choose second field</option>
+                    <option value="firstName">First name</option>
+                    <option value="lastName">Last name</option>
+                    <option value="governmentName">Government name</option>
+                    <option value="administrationLevel">Administration level</option>
+                    <option value="content_sr">Content</option>
+                    <option value="content_en">Content English</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="value2">Enter value</label>
+                <input type="text" name="value2" id="value2" formControlName="value2" placeholder="Enter second value">
+            </div>
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="container" *ngIf="resultsContainerVisible">
+    <div class="row" id="results">
+        <div class="col-md-6" *ngFor="let result of results">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ result.title }}</h5>
+                    <p class="card-text">{{ result.content }}</p>
+                    <a [href]="result.downloadLink" class="btn btn-primary"
+                        [download]="result.downloadTitle">Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

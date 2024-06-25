@@ -1,0 +1,31 @@
+<div class="centered-container">
+    <div class="mat-card">
+        <h1 class="mat-h1">Login</h1>
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+            <div class="form-field-container">
+                <div class="full-width">
+                    <input matInput class="email-field" placeholder="Email" formControlName="username">
+                    <div class="error-message" *ngIf="loginForm.get('username')?.hasError('required')">Email is
+                        required</div>
+                    <div class="error-message" *ngIf="loginForm.get('username')?.hasError('pattern')">Invalid email
+                        pattern</div>
+                </div>
+            </div>
+            <div class="form-field-container">
+                <div class="full-width">
+                    <input matInput type="{{ passwordVisible ? 'text' : 'password' }}" placeholder="Password"
+                        formControlName="password">
+                    <div class="error-message" *ngIf="loginForm.get('password')?.hasError('required')">Password is
+                        required</div>
+                    <div class="error-message" *ngIf="loginForm.get('password')?.hasError('pattern')">Password must have
+                        at least 8 characters, one uppercase letter, one lowercase letter, one digit and one special
+                        character (e.g., @$!%*?&)</div>
+                </div>
+            </div>
+            <div class="form-field-container">
+                <button mat-raised-button color="primary" type="submit" class="full-width"
+                    [disabled]="loginForm.invalid">Login</button>
+            </div>
+        </form>
+    </div>
+</div>

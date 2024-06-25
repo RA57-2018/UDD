@@ -1,0 +1,27 @@
+header {
+    background-color: #fc3ccf;
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+.inner-width {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.welcome-text {
+    font-size: 20pt;
+}
+
+.navigation-menu {
+    display: flex;
+    gap: 20px;
+    margin-right: 20px;
+}
+
+.navigation-menu a {
+    color: white;
+    text-decoration: none;
+}

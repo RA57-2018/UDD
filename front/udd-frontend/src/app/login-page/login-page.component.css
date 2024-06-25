@@ -1,0 +1,86 @@
+.centered-container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: rgb(251, 203, 210);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.mat-card {
+    padding: 20px;
+    text-align: center;
+}
+
+.form-field-container {
+    margin-bottom: 20px;
+}
+
+.full-width input[type="text"],
+.full-width input[type="password"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.email-field {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.email-field:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(242, 107, 203, 0.5);
+}
+
+.full-width input[type="text"]:focus,
+.full-width input[type="password"]:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(242, 107, 203, 0.5);
+}
+
+.full-width button {
+    width: 100%;
+    padding: 10px;
+    background-color: #fc3ccf;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.full-width button:hover {
+    background-color: #fc3ccf;
+}
+
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.success-message {
+    color: #28a745;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #fc3ccf;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #c02e9e;
+}
