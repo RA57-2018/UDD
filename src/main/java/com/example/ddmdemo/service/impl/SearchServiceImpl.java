@@ -7,17 +7,29 @@ import com.example.ddmdemo.dto.BooleanDTO;
 import com.example.ddmdemo.exceptionhandling.exception.MalformedQueryException;
 import com.example.ddmdemo.indexmodel.DummyIndex;
 import com.example.ddmdemo.service.interfaces.SearchService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHitSupport;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.HighlightQuery;
+import org.springframework.data.elasticsearch.core.query.highlight.Highlight;
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightField;
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightFieldParameters;
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightFieldParameters.HighlightFieldParametersBuilder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,11 +40,22 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<DummyIndex> simple(List<String> keywords, Boolean isPhaseQuery, Pageable pageable) {
-        var searchQueryBuilder =
-            new NativeQueryBuilder().withQuery(buildSimpleSearchQuery(keywords, isPhaseQuery))
-                .withPageable(pageable);
+    	HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
+				.withPreTags("<em>").withPostTags("<em>").withFragmentSize(150).withType("unified");
+		HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();  	
 
-        return runQuery(searchQueryBuilder.build());
+		List<HighlightField> highlightFields = new ArrayList<>();
+
+		for (String field : Arrays.asList("title", "contentSr", "contentEn", "firstName", "lastName", "governmentName", "administrationLevel", "address")) {
+		    highlightFields.add(new HighlightField(field, highlightFieldParameters));
+		}
+
+		var searchQueryBuilder =
+		    new NativeQueryBuilder().withQuery(buildSimpleSearchQuery(keywords, isPhaseQuery))
+		    	.withHighlightQuery(new HighlightQuery(new Highlight(highlightFields), DummyIndex.class))
+		        .withPageable(pageable);
+
+		return runQuery(searchQueryBuilder.build());
     }
 
     @Override
@@ -40,11 +63,24 @@ public class SearchServiceImpl implements SearchService {
         if (expression.size() != 3) {
             throw new MalformedQueryException("Search query malformed.");
         }
+        
+        HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
+                .withPreTags("<em>").withPostTags("<em>").withFragmentSize(250).withType("unified");
+        HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();
+
+        List<HighlightField> highlightFields = new ArrayList<>();
+
+        String field1 = expression.get(0).split(":")[0];
+        String field2 = expression.get(2).split(":")[0];       
+
+        highlightFields.add(new HighlightField(field1, highlightFieldParameters));
+        highlightFields.add(new HighlightField(field2, highlightFieldParameters));
 
         String operation = expression.get(1);
         expression.remove(1);
         var searchQueryBuilder =
             new NativeQueryBuilder().withQuery(buildAdvancedSearchQuery(expression, operation))
+            	.withHighlightQuery(new HighlightQuery(new Highlight(highlightFields), DummyIndex.class))
                 .withPageable(pageable);
 
         return runQuery(searchQueryBuilder.build());
@@ -52,16 +88,39 @@ public class SearchServiceImpl implements SearchService {
        
     @Override
     public Page<DummyIndex> simpleSearch(String field, String text, Pageable pageable) {
+    	HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
+    			.withPreTags("<em>").withPostTags("<em>").withFragmentSize(150).withType("unified");
+    	HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();
+
+        List<HighlightField> highlightFields = new ArrayList<>();
+        highlightFields.add(new HighlightField(field, highlightFieldParameters));
+        
     	var searchQueryBuilder =
                 new NativeQueryBuilder().withQuery(buildSearchSimpleQuery(field, text))
-                    .withPageable(pageable);
+                .withHighlightQuery(new HighlightQuery(new Highlight(highlightFields), DummyIndex.class))
+            	.withPageable(pageable);
 
         return runQuery(searchQueryBuilder.build());
     }
     
     public Page<DummyIndex> booleanSearch(BooleanDTO booleanDTO, Pageable pageable) {
+    	HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
+    			.withPreTags("<em>").withPostTags("<em>").withFragmentSize(150).withType("unified");
+    	HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();
+
+    	List<HighlightField> highlightFields = new ArrayList<>();
+
+        if (booleanDTO.getField1() != null && !booleanDTO.getField1().isEmpty()) {
+            highlightFields.add(new HighlightField(booleanDTO.getField1(), highlightFieldParameters));
+        }
+
+        if (booleanDTO.getField2() != null && !booleanDTO.getField2().isEmpty()) {
+            highlightFields.add(new HighlightField(booleanDTO.getField2(), highlightFieldParameters));
+        }
+        
         var searchQueryBuilder =
             new NativeQueryBuilder().withQuery(buildBooleanSearchQuery(booleanDTO))
+            	.withHighlightQuery(new HighlightQuery(new Highlight(highlightFields), DummyIndex.class))
                 .withPageable(pageable);
 
         return runQuery(searchQueryBuilder.build());
@@ -165,9 +224,29 @@ public class SearchServiceImpl implements SearchService {
 
         var searchHits = elasticsearchTemplate.search(searchQuery, DummyIndex.class,
             IndexCoordinates.of("dummy_index"));
+        
+        List<String> highlightFieldNames = searchQuery.getHighlightQuery()
+                .map(HighlightQuery::getHighlight)
+                .map(Highlight::getFields)
+                .orElse(List.of())
+                .stream()
+                .map(HighlightField::getName)
+                .collect(Collectors.toList());
+
+        List<DummyIndex> results = searchHits.getSearchHits().stream().map(hit -> {
+            DummyIndex dummyIndex = hit.getContent();
+            String highlight = highlightFieldNames.stream()
+                    .flatMap(name -> {
+                        List<String> fragments = Optional.ofNullable(hit.getHighlightFields().get(name)).orElse(Collections.emptyList());
+                        return fragments.stream();
+                    })
+                    .collect(Collectors.joining(" "));
+            dummyIndex.setHighlight(highlight);
+            return dummyIndex;
+        }).collect(Collectors.toList());
 
         var searchHitsPaged = SearchHitSupport.searchPageFor(searchHits, searchQuery.getPageable());
 
-        return (Page<DummyIndex>) SearchHitSupport.unwrapSearchHits(searchHitsPaged);
+        return new PageImpl<>(results, searchQuery.getPageable(), searchHits.getTotalHits());
     }
 }

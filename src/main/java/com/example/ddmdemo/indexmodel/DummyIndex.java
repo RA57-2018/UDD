@@ -50,4 +50,7 @@ public class DummyIndex {
     
     @Field(type = FieldType.Text, store = true, name = "address")
     private String address;
+    
+ // This field is not stored in Elasticsearch, it's used for storing highlight texts temporarily
+ 	private String highlight;
 }

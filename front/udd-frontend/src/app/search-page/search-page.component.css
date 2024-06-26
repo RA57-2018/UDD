@@ -12,7 +12,7 @@
 .input-group {
     display: flex;
     align-items: center;
-    justify-content: center; /* Centriranje grupe unutar kontejnera */
+    justify-content: center;
     margin-bottom: 15px;
 }
 
@@ -20,7 +20,7 @@
     flex: 1;
     text-align: right;
     padding-right: 10px;
-    max-width: 150px; /* Ograničava širinu labela */
+    max-width: 150px;
 }
 
 .input-group select,
@@ -70,11 +70,14 @@ button:hover {
     color: #fff;
 }
 
-.clear-results-button {
-    margin-top: 10px;
-}
-
 .phase-query {
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.clear-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

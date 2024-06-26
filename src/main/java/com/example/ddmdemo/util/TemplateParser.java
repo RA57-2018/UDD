@@ -4,14 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class TemplateParser {
 	
 	public static List<String> parseTemplate(String documentContent) {
 	    List<String> fields = new ArrayList<>();
 	
 	    // Extract words after "Uprava za"
-	    addField(fields, extractField(documentContent, "Uprava za\\s+([\\w\\s]+?)\\s*(?:\\n|$)"));
+	    addField(fields, extractUprava(documentContent, "Uprava za\\s+([\\w\\s]+?)\\s*(?:\\n|$)"));
 	
 	    // Extract words after "Nivo uprave:"
 	    addField(fields, extractField(documentContent, "Nivo uprave:\\s+([\\w\\s]+?)\\s*(?:\\n|$)"));
@@ -54,6 +56,7 @@ public class TemplateParser {
 	        int emailIndex = emailMatcher.start();
 	        int nextLineBreak = documentContent.indexOf('\n', emailIndex);
 	        if (nextLineBreak != -1) {
+	        	extractCityFromAddress(documentContent.substring(emailIndex + emailMatcher.group().length(), nextLineBreak).trim());
 	            return documentContent.substring(emailIndex + emailMatcher.group().length(), nextLineBreak).trim();
 	        }
 	    }
@@ -75,6 +78,33 @@ public class TemplateParser {
 	        words.add(matcher.group(1));
 	        words.add(matcher.group(2));
 	    }
+	    if (!words.isEmpty()) {
+	        String fullName = String.join(" ", words);
+	        log.info("STATISTIC-LOG zaposleni -> " + fullName);
+	    }
 	    return words;
+	}
+	
+	private static void extractCityFromAddress(String address) {
+        String[] parts = address.split(",");
+        if (parts.length > 0) {
+            String city = parts[parts.length - 1].trim();
+            log.info("STATISTIC-LOG grad -> " + city);
+        }
+    }
+
+	private static String extractUprava(String documentContent, String regex) {
+	    Pattern pattern = Pattern.compile(regex);
+	    Matcher matcher = pattern.matcher(documentContent);
+	    if (matcher.find()) {
+	        if (matcher.groupCount() > 0) {
+	        	String uprava = matcher.group(1);
+	        	log.info("STATISTIC-LOG uprava -> " + uprava);
+	            return matcher.group(1);
+	        } else {
+	            return matcher.group();
+	        }
+	    }
+	    return null;
 	}
 }

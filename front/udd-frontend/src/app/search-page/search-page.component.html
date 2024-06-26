@@ -6,7 +6,6 @@
     </form>
     <div *ngIf="successMessage" class="alert">{{ successMessage }}</div>
     <div *ngIf="errorMessage" class="alert">{{ errorMessage }}</div>
-    <button (click)="clearResults()" class="clear-results-button">X</button>
 </div>
 
 <div class="container">
@@ -29,7 +28,7 @@
             </div>
             <div *ngIf="isSimpleSearch()" class="phase-query">
                 <label>
-                    <input type="checkbox" formControlName="isPhaseQuery"> Is Phase Query
+                    <input type="checkbox" formControlName="isPhaseQuery"> Is Phrase
                 </label>
             </div>
         </div>
@@ -81,7 +80,7 @@
             </div>
             <div class="input-group">
                 <label for="value1">Enter value</label>
-                <input type="text" name="value1" id="value1" formControlName="value1" placeholder="Enter first value">
+                <input type="text" name="value1" id="value1" formControlName="value1" placeholder="Enter value">
             </div>
             <div class="input-group">
                 <label for="operation">Choose operation</label>
@@ -106,10 +105,19 @@
             </div>
             <div class="input-group">
                 <label for="value2">Enter value</label>
-                <input type="text" name="value2" id="value2" formControlName="value2" placeholder="Enter second value">
+                <input type="text" name="value2" id="value2" formControlName="value2" placeholder="Enter value">
             </div>
             <button type="submit">Search</button>
         </form>
+    </div>
+</div>
+
+<div class="clear-button">
+    <h2>
+        Clear results
+    </h2>
+    <div>
+        <button (click)="clearResults()" class="clear-results-button">X</button>
     </div>
 </div>
 
@@ -119,6 +127,8 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">{{ result.title }}</h5>
+                    <p class="card-text" [innerHTML]="result.highlight"></p>
+                    <span></span>
                     <p class="card-text">{{ result.content }}</p>
                     <a [href]="result.downloadLink" class="btn btn-primary"
                         [download]="result.downloadTitle">Download</a>
