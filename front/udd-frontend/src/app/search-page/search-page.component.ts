@@ -96,6 +96,7 @@ export class SearchPageComponent implements OnInit {
       this.searchService[method](query).subscribe({
         next: (data: any) => {
           this.displayResults(data);
+          console.log(data);
         },
         error: (error) => {
           console.error('Error executing search:', error);

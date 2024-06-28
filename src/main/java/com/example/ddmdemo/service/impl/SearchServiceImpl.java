@@ -40,22 +40,23 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<DummyIndex> simple(List<String> keywords, Boolean isPhaseQuery, Pageable pageable) {
-    	HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
-				.withPreTags("<em>").withPostTags("<em>").withFragmentSize(150).withType("unified");
-		HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();  	
+        HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
+            .withPreTags("<strong>").withPostTags("</strong>").withFragmentSize(150).withType("unified");
+        
+        HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();  
 
-		List<HighlightField> highlightFields = new ArrayList<>();
+        List<HighlightField> highlightFields = new ArrayList<>();
 
-		for (String field : Arrays.asList("title", "contentSr", "contentEn", "firstName", "lastName", "governmentName", "administrationLevel", "address")) {
-		    highlightFields.add(new HighlightField(field, highlightFieldParameters));
-		}
+        for (String field : Arrays.asList("title", "contentSr", "contentEn", "firstName", "lastName", "governmentName", "administrationLevel", "address")) {
+            highlightFields.add(new HighlightField(field, highlightFieldParameters));
+        }
 
-		var searchQueryBuilder =
-		    new NativeQueryBuilder().withQuery(buildSimpleSearchQuery(keywords, isPhaseQuery))
-		    	.withHighlightQuery(new HighlightQuery(new Highlight(highlightFields), DummyIndex.class))
-		        .withPageable(pageable);
+        var searchQueryBuilder = new NativeQueryBuilder()
+            .withQuery(buildSimpleSearchQuery(keywords, isPhaseQuery))
+            .withHighlightQuery(new HighlightQuery(new Highlight(highlightFields), DummyIndex.class))
+            .withPageable(pageable);
 
-		return runQuery(searchQueryBuilder.build());
+        return runQuery(searchQueryBuilder.build());
     }
 
     @Override
@@ -65,7 +66,7 @@ public class SearchServiceImpl implements SearchService {
         }
         
         HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
-                .withPreTags("<em>").withPostTags("<em>").withFragmentSize(250).withType("unified");
+                .withPreTags("<strong>").withPostTags("</strong>").withFragmentSize(250).withType("unified");
         HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();
 
         List<HighlightField> highlightFields = new ArrayList<>();
@@ -89,7 +90,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public Page<DummyIndex> simpleSearch(String field, String text, Pageable pageable) {
     	HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
-    			.withPreTags("<em>").withPostTags("<em>").withFragmentSize(150).withType("unified");
+    			.withPreTags("<strong>").withPostTags("</strong>").withFragmentSize(150).withType("unified");
     	HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();
 
         List<HighlightField> highlightFields = new ArrayList<>();
@@ -105,7 +106,7 @@ public class SearchServiceImpl implements SearchService {
     
     public Page<DummyIndex> booleanSearch(BooleanDTO booleanDTO, Pageable pageable) {
     	HighlightFieldParametersBuilder highlightFieldParamBuilder = HighlightFieldParameters.builder()
-    			.withPreTags("<em>").withPostTags("<em>").withFragmentSize(150).withType("unified");
+    			.withPreTags("<strong>").withPostTags("</strong>").withFragmentSize(150).withType("unified");
     	HighlightFieldParameters highlightFieldParameters = highlightFieldParamBuilder.build();
 
     	List<HighlightField> highlightFields = new ArrayList<>();
@@ -127,12 +128,14 @@ public class SearchServiceImpl implements SearchService {
     }
     
     private Query buildSimpleSearchQuery(List<String> tokens, Boolean isPhaseQuery) {
-    	if (isPhaseQuery) {
-    		String joinedTokens = String.join(" ", tokens);
-    		return BoolQuery.of(q -> q.must(mb -> mb.bool(b -> b.must(sb -> sb.matchPhrase(
-                    m -> m.field("content_sr").query(joinedTokens)))
-            )))._toQuery();
-    	}
+    	    if (isPhaseQuery) {
+    	        String joinedTokens = String.join(" ", tokens);
+    	        return BoolQuery.of(q -> q.must(mb -> mb.bool(b -> b.should(sb -> sb.matchPhrase(
+    	                    m -> m.field("content_sr").query(joinedTokens)))
+    	                .should(sb -> sb.matchPhrase(
+    	                    m -> m.field("content_en").query(joinedTokens)))
+    	        )))._toQuery();
+    	    }
         return BoolQuery.of(q -> q.must(mb -> mb.bool(b -> {
             tokens.forEach(token -> {
                 b.should(sb -> sb.match(
